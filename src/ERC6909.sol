@@ -38,10 +38,10 @@ abstract contract ERC6909 is IERC6909Claims {
         return keccak256(abi.encodePacked(bytes4(0x598af9e7), owner, spender, id));
     }
 
-    function allowance(address owner, address spender, uint256 id) public view returns (uint256 allowance) {
+    function allowance(address owner, address spender, uint256 id) public view returns (uint256 _allowance) {
         bytes32 key = allowanceKey(owner, spender, id);
         assembly ("memory-safe") {
-            allowance := sload(key)
+            _allowance := sload(key)
         }
     }
 
