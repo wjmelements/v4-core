@@ -11,11 +11,19 @@ abstract contract ERC6909Claims is ERC6909 {
     /// @param id The currency to burn.
     /// @param amount The amount to burn.
     function _burnFrom(address from, uint256 id, uint256 amount) internal {
-        address sender = msg.sender;
-        if (from != sender && !isOperator[from][sender]) {
-            uint256 senderAllowance = allowance[from][sender][id];
-            if (senderAllowance != type(uint256).max) {
-                allowance[from][sender][id] = senderAllowance - amount;
+        if (from != msg.sender) {
+            if (!isOperator(from, msg.sender)) {
+                bytes32 _allowanceKey = allowanceKey(from, msg.sender, id);
+                uint256 allowed;
+                assembly ("memory-safe") {
+                    allowed := sload(_allowanceKey)
+                }
+                if (allowed != type(uint256).max) {
+                    allowed -= amount;
+                    assembly ("memory-safe") {
+                        sstore(_allowanceKey, allowed)
+                    }
+                }
             }
         }
         _burn(from, id, amount);
